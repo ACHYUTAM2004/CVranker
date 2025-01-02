@@ -3,4 +3,3 @@ supabase
 spacy
 pymupdf
 pandas
-en-core-web-sm
