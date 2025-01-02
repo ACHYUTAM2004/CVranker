@@ -10,14 +10,31 @@ import os
 # Initialize spaCy model
 def download_spacy_model():
     try:
-        spacy.load("en_core_web_sm")
-        st.info("SpaCy model 'en_core_web_sm' is already installed.")
+        # Try to load the model
+        nlp = spacy.load("en_core_web_sm")
+        print("Model loaded successfully.")
+        return nlp
     except OSError:
-        st.warning("Downloading 'en_core_web_sm' model. Please wait...")
-        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=True)
-        st.success("SpaCy model 'en_core_web_sm' installed successfully!")
+        # If the model isn't found, try to install it
+        print("Model not found. Attempting to download...")
+        try:
+            subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=True)
+            nlp = spacy.load("en_core_web_sm")
+            print("Model downloaded and loaded successfully.")
+            return nlp
+        except subprocess.CalledProcessError as e:
+            print(f"Error downloading model: {e}")
+            return None  # Or handle the error as needed
+        except OSError:
+            print("Failed to load the model after downloading.")
+            return None
 
 nlp = download_spacy_model()
+if nlp is None:
+    print("Model could not be loaded or downloaded.")
+else:
+    # Proceed with the rest of the code
+    pass
 
 # Define the domain-specific skills
 skills = {
