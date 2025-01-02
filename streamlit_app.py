@@ -5,6 +5,7 @@ import pandas as pd
 from io import BytesIO
 import json
 import streamlit as st
+import subprocess
 
 # Connect to Supabase
 SUPABASE_URL = "https://oewyazfmpcfoxwjunwpp.supabase.co/"
@@ -16,7 +17,24 @@ bucket_name = "pdf"
 folder_path = "public"
 
 # Initialize spaCy
-nlp = spacy.load('en_core_web_sm')
+# Function to check and download SpaCy model
+def download_spacy_model():
+    try:
+        # Check if the model is already loaded
+        spacy.load("en_core_web_sm")
+        st.info("SpaCy model 'en_core_web_sm' is already installed.")
+    except OSError:
+        # Download the model if not installed
+        st.warning("Downloading 'en_core_web_sm' model. Please wait...")
+        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=True)
+        st.success("SpaCy model 'en_core_web_sm' installed successfully!")
+
+# Call the function during app initialization
+download_spacy_model()
+
+# Your Streamlit app code
+st.title("Resume Ranking System")
+st.write("This app uses SpaCy and other libraries to rank resumes.")
 
 def create_dataframe_from_subfolders(bucket_name, folder_path):
     def list_subfolders(bucket_name, folder_path):
