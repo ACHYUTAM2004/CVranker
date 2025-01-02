@@ -155,8 +155,8 @@ def preprocessing(dataframe, bucket_name, main_folder="public"):
                     "Score": int(total_score)  # Convert to integer
                 })
 
-   # Function to save structured data as JSON strings
-    def save_data_to_json(data):
+    # Function to save structured data to separate JSON files and upload them to Supabase
+    def save_data_to_json_and_upload(data, subfolder):
         # Sort the data by Score in descending order
         data_sorted = sorted(data, key=lambda x: x['Score'], reverse=True)
 
@@ -164,20 +164,38 @@ def preprocessing(dataframe, bucket_name, main_folder="public"):
         for index, resume in enumerate(data_sorted, start=1):
             resume['Rank'] = index  # Assign rank based on position
 
-        # Convert the sorted and ranked data to a JSON string
-        json_data = json.dumps(data_sorted, indent=4)
-        return json_data
+        # Save the structured data for a specific subfolder to a local JSON file
+        file_name = f"{subfolder}_structured_data.json"
+        with open(file_name, 'w') as json_file:
+            json.dump(data_sorted, json_file, indent=4)
 
-    # Process structured data for each subfolder
-    processed_data = {}
+        # Check if the file already exists in Supabase and delete it if it does
+        try:
+            existing_files = supabase.storage.from_(bucket_name).list("json")  # List files in the 'json' folder
+            # Check if the file already exists
+            if file_name in [file['name'] for file in existing_files]:
+                print(f"File {file_name} already exists. Deleting and uploading a new file.")
+                # Delete the existing file
+                supabase.storage.from_(bucket_name).remove([f'json/{file_name}'])
+            
+            # Upload the new JSON file to Supabase
+            with open(file_name, 'rb') as file:
+                response = supabase.storage.from_(bucket_name).upload(f'json/{file_name}', file)
+            print(f"File {file_name} uploaded successfully!")
+
+        except Exception as e:
+            print(f"Error uploading {file_name}: {e}")
+
+    # Remove the 'Keywords' column from each subfolder's data before saving
     for subfolder in structured_data:
         for resume in structured_data[subfolder]:
             del resume['Keywords']  # Drop the 'Keywords' column
 
-        # Generate JSON string for the current subfolder's data
-        json_string = save_data_to_json(structured_data[subfolder])
-        processed_data[subfolder] = json_string  # Store JSON string in a dictionary  # Optionally, return the structured data
-    # Optionally, return the structured data
+        # Save and upload the structured data for each subfolder as a separate JSON file
+        save_data_to_json_and_upload(structured_data[subfolder], subfolder)
+
+    return structured_data  # Optionally, return the structured data
+  # Optionally, return the structured data
 
 preprocessing(df, bucket_name, folder_path)
 
