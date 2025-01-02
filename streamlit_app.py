@@ -81,7 +81,7 @@ def job_seeker_section():
     # Show domain selection first
     st.header("Job Seeker Section")
 
-    domain = st.selectbox("Select Your Domain", ["Data Science", "Web Designing", "Java Development", "Python Development", "Databases"])
+    domain = st.selectbox("Select Your Domain", ["Data Science", "Web Designing", "Databases"])
 
     # After selecting domain, show file uploader for PDF
     uploaded_file = None
