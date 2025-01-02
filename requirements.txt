@@ -1,5 +1,0 @@
-streamlit
-supabase
-spacy
-pymupdf
-pandas
