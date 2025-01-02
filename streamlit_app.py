@@ -4,6 +4,7 @@ import fitz  # PyMuPDF
 import json
 import streamlit as st
 from io import BytesIO
+import subprocess
 import os
 
 # Initialize spaCy model
