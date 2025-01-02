@@ -29,9 +29,6 @@ def download_spacy_model():
         subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=True)
         st.success("SpaCy model 'en_core_web_sm' installed successfully!")
 
-# Your Streamlit app code
-st.title("Resume Ranking System")
-st.write("This app uses SpaCy and other libraries to rank resumes.")
 
 def create_dataframe_from_subfolders(bucket_name, folder_path):
     def list_subfolders(bucket_name, folder_path):
