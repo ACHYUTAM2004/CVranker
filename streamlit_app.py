@@ -29,9 +29,6 @@ def download_spacy_model():
         subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=True)
         st.success("SpaCy model 'en_core_web_sm' installed successfully!")
 
-# Call the function during app initialization
-download_spacy_model()
-
 # Your Streamlit app code
 st.title("Resume Ranking System")
 st.write("This app uses SpaCy and other libraries to rank resumes.")
@@ -133,7 +130,7 @@ def preprocessing(dataframe, bucket_name, main_folder):
             return None
 
     def clean_text_with_spacy(text):
-        doc = nlp(text)
+        doc = download_spacy_model(text)
         # Clean the text by removing stopwords and applying lemmatization
         cleaned_text = ' '.join([token.lemma_ for token in doc if not token.is_stop and token.is_alpha])
         return cleaned_text
@@ -192,8 +189,7 @@ def preprocessing(dataframe, bucket_name, main_folder):
         # Generate JSON string for the current subfolder's data
         json_string = save_data_to_json(structured_data[subfolder])
         processed_data[subfolder] = json_string  # Store JSON string in a dictionary  # Optionally, return the structured data
-    # Optionally, return the structured data
-
+    return processed_data
 
 # Streamlit App
 def main():
