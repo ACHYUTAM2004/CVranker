@@ -2,5 +2,4 @@ streamlit
 supabase
 pymupdf
 spacy>=3.0.0,<4.0.0
-en_core_web_sm
 pandas
