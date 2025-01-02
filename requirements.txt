@@ -1,6 +1,6 @@
-streamlit
-supabase
-spacy
-pymupdf
-pandas
-en_core_web_sm
+pip install streamlit
+pip install supabase
+pip install spacy
+pip install pymupdf
+pip install pandas
+python -m spacy download en_core_web_sm
