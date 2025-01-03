@@ -264,6 +264,7 @@ elif page == "Job Seeker":
 
 elif page == "Recruiter":
     # Recruiter Section
+    st.title("Resume Ranking System")
     st.header("Recruiter")
     st.subheader("View Leaderboard")
     selected_domain = st.selectbox("Select Domain", ["data-scientist", "database-management", "web-designing"], key="recruiter_domain")
@@ -279,41 +280,23 @@ elif page == "Recruiter":
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
-            # Add "Download PDF" column
+            # Add download links to the leaderboard
+            SUPABASE_URL = "https://your-supabase-url.com"  # Update with your actual Supabase URL
+            FOLDER_PATH = "pdf"  # Your folder path
             leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
                 lambda x: f'<a href="{SUPABASE_URL}/storage/v1/object/pdf/{FOLDER_PATH}/{selected_domain}/{x}" target="_blank">Download</a>'
             )
 
-            # Display leaderboard using Plotly for better control
+            # Render leaderboard as an HTML table
             st.subheader(f"Leaderboard for {selected_domain}")
-            fig = go.Figure(
-                data=[
-                    go.Table(
-                        header=dict(
-                            values=["File Name", "Score", "Rank", "Download PDF"],
-                            fill_color='rgba(255, 87, 51, 0.5)',
-                            align='center',
-                            font=dict(size=20),
-                            height=35
-                        ),
-                        cells=dict(
-                            values=[
-                                leaderboard_df["File Name"],
-                                leaderboard_df["Score"],
-                                leaderboard_df["Rank"],
-                                leaderboard_df["Download PDF"],
-                            ],
-                            fill_color='teal',
-                            align='center',
-                            font=dict(size=18),
-                            height=30,
-                            format=["", "", "", "html"],  # Ensure HTML rendering for links
-                        )
-                    )
-                ]
+            st.markdown(
+                leaderboard_df.to_html(
+                    escape=False, 
+                    index=False, 
+                    columns=["File Name", "Score", "Rank", "Download PDF"]
+                ),
+                unsafe_allow_html=True
             )
-            fig.update_layout(width=1200, height=500)
-            st.plotly_chart(fig, use_container_width=True)
 
             # Trigger snowflake effect
             st.snow()
