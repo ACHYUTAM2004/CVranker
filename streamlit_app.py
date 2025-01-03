@@ -282,7 +282,7 @@ if page == "Recruiter":
 
             # Add "Download PDF" column with the file URLs for links (This will not be shown in Plotly table)
             leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
-                lambda x: f'{SUPABASE_URL}/storage/v1/object/{FOLDER_PATH}/{BUCKET_NAME}/{FOLDER_PATH}/{selected_domain}/{x}'
+                lambda x: f'{SUPABASE_URL}/storage/v1/object/{BUCKET_NAME}/{FOLDER_PATH}/{BUCKET_NAME}/{selected_domain}/{x}'
             )
 
             # Display leaderboard using Plotly Table (without "Download PDF" column)
@@ -309,15 +309,21 @@ if page == "Recruiter":
             )
 
             # Update layout for better visualization
-            fig.update_layout(width=800, height=400)
+            fig.update_layout(width=900, height=500)
 
             # Render the table using Plotly
             st.plotly_chart(fig, use_container_width=True)
 
-            # Manually add clickable download links using st.markdown (below the table)
+            # Manually add clickable download links using st.download_button
             st.subheader("Download Links:")
             for _, row in leaderboard_df.iterrows():
-                st.markdown(f"**{row['File Name']}**: [Download PDF]({row['Download PDF']})")
+                pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdf/public/{selected_domain}/{row['File Name']}"
+                st.download_button(
+                    label=f"Download {row['File Name']}",
+                    data=requests.get(pdf_url).content,
+                    file_name=row['File Name'],
+                    mime="application/pdf"
+                )
 
             # Trigger snowflake effect
             st.snow()
