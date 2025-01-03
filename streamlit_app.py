@@ -238,12 +238,16 @@ elif page == "Job Seeker":
         except Exception as e:
             st.error(f"Failed to upload the resume: {e}")
 
-        # Process files and display leaderboard (without download links)
+        # Process files and display leaderboard (sorted by rank)
         df = create_dataframe_from_subfolders(BUCKET_NAME, FOLDER_PATH)
         structured_data = preprocessing(df, BUCKET_NAME, FOLDER_PATH)
         leaderboard = structured_data[domain]
+        
+        # Sort leaderboard by rank
+        leaderboard_sorted = sorted(leaderboard, key=lambda x: x['Rank'])
+        
         st.subheader(f"Leaderboard for {domain}")
-        st.write(pd.DataFrame(leaderboard))
+        st.write(pd.DataFrame(leaderboard_sorted))
 
 elif page == "Recruiter":
     # Recruiter Section
@@ -258,7 +262,10 @@ elif page == "Recruiter":
             # Download the leaderboard JSON from Supabase
             response = supabase.storage.from_(BUCKET_NAME).download(json_file_path)
             leaderboard_data = json.load(BytesIO(response))
-            leaderboard_df = pd.DataFrame(leaderboard_data)
+            
+            # Sort leaderboard by rank
+            leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
+            leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
             # Display the leaderboard
             st.write(leaderboard_df)
