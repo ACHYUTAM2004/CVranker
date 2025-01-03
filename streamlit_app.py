@@ -312,7 +312,7 @@ elif page == "Recruiter":
                     )
                 ]
             )
-            fig.update_layout(width=900, height=500)
+            fig.update_layout(width=1200, height=500)
             st.plotly_chart(fig, use_container_width=True)
 
             # Trigger snowflake effect
