@@ -281,7 +281,6 @@ if page == "Recruiter":
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
             # Add "Download PDF" column with the file URLs for links (This will not be shown in Plotly table)
-            FOLDER_PATH = "pdf"  # Your folder path
             leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
                 lambda x: f'{SUPABASE_URL}/storage/v1/object/{BUCKET_NAME}/{FOLDER_PATH}/{selected_domain}/{x}'
             )
@@ -310,7 +309,7 @@ if page == "Recruiter":
             )
 
             # Update layout for better visualization
-            fig.update_layout(width=900, height=500)
+            fig.update_layout(width=800, height=400)
 
             # Render the table using Plotly
             st.plotly_chart(fig, use_container_width=True)
