@@ -366,7 +366,7 @@ if page == "Recruiter":
         )
 
         # Update layout for better visualization
-        fig.update_layout(width=900, height=500)
+        fig.update_layout(width=900, height=300)
 
         # Render the table using Plotly
         st.plotly_chart(fig, use_container_width=True)
