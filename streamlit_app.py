@@ -278,7 +278,6 @@ elif page == "Recruiter":
             
             # Sort leaderboard by rank
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
-            leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
             # Display the leaderboard
             st.subheader(f"Leaderboard for {domain}")
