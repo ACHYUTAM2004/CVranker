@@ -291,7 +291,7 @@ elif page == "Recruiter":
                             fill_color='rgba(255, 87, 51, 0.5)',
                             align='center',
                             font=dict(size=20),
-                            height=40
+                            height=35
                         ),
                         cells=dict(
                             values=[leaderboard_df[col] for col in leaderboard_df.columns],
@@ -303,7 +303,7 @@ elif page == "Recruiter":
                     )
                 ]
             )
-            fig.update_layout(width=1000, height=800)
+            fig.update_layout(width=800, height=200)
             st.plotly_chart(fig)
 
             # Trigger snowflake effect
