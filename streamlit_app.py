@@ -238,7 +238,7 @@ elif page == "Job Seeker":
         except Exception as e:
             st.error(f"Failed to upload the resume: {e}")
 
-        # Process files and display leaderboard
+        # Process files and display leaderboard (without download links)
         df = create_dataframe_from_subfolders(BUCKET_NAME, FOLDER_PATH)
         structured_data = preprocessing(df, BUCKET_NAME, FOLDER_PATH)
         leaderboard = structured_data[domain]
