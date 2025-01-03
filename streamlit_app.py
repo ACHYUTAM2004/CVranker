@@ -5,6 +5,7 @@ import pandas as pd
 from io import BytesIO
 import json
 import streamlit as st
+import plotly.graph_objects as go
 
 # Connect to Supabase
 SUPABASE_URL = "https://vbgxuijebobixzrqgvys.supabase.co"
@@ -278,33 +279,35 @@ elif page == "Recruiter":
             
             # Sort leaderboard by rank
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
+            leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
-            # Display the leaderboard
+            # Display leaderboard using Plotly for better control
             st.subheader(f"Leaderboard for {selected_domain}")
-            st.markdown(
-                """
-                <style>
-                    .dataframe-container {
-                        width: 90%;
-                        margin: auto;
-                    }
-                    table.dataframe {
-                        font-size: 16px;
-                        border: 2px solid #ddd;
-                    }
-                </style>
-                """,
-                unsafe_allow_html=True
+            fig = go.Figure(
+                data=[
+                    go.Table(
+                        header=dict(
+                            values=list(leaderboard_df.columns),
+                            fill_color='paleturquoise',
+                            align='left',
+                            font=dict(size=18)
+                        ),
+                        cells=dict(
+                            values=[leaderboard_df[col] for col in leaderboard_df.columns],
+                            fill_color='lavender',
+                            align='left',
+                            font=dict(size=16)
+                        )
+                    )
+                ]
             )
-            st.write('<div class="dataframe-container">', unsafe_allow_html=True)
-            st.write(pd.DataFrame(leaderboard_data_sorted))
-            st.write('</div>', unsafe_allow_html=True)
-    
+            fig.update_layout(width=1000, height=600)
+            st.plotly_chart(fig)
+
             # Trigger snowflake effect
             st.snow()
 
             # Provide download links for resumes
-            leaderboard_df=pd.DataFrame(leaderboard_data_sorted)
             st.subheader("Download Resumes")
             for _, row in leaderboard_df.iterrows():
                 resume_path = f"{FOLDER_PATH}/{selected_domain}/{row['File Name']}"
