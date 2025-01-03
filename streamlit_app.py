@@ -262,6 +262,7 @@ elif page == "Job Seeker":
         else:
             st.error("Could not find the rank for the uploaded file.")
 
+# Recruiter Section
 if page == "Recruiter":
     st.title("Resume Ranking System")
     st.header("Recruiter")
@@ -279,21 +280,42 @@ if page == "Recruiter":
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
-            # Add download links to the leaderboard
+            # Add "Download PDF" column with HTML links
             FOLDER_PATH = "pdf"  # Your folder path
             leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
-                lambda x: f'<a href="{SUPABASE_URL}/storage/v1/object/{FOLDER_PATH}/pdf/{selected_domain}/{x}" target="_blank">Download</a>'
+                lambda x: f'<a href="{SUPABASE_URL}/storage/v1/object/public/{FOLDER_PATH}/{selected_domain}/{x}" target="_blank">Download</a>'
             )
 
-            # Configure AgGrid options
-            gb = GridOptionsBuilder.from_dataframe(leaderboard_df)
-            gb.configure_pagination(paginationAutoPageSize=True)  # Enable pagination
-            gb.configure_default_column(editable=False)  # Columns not editable
-            gb.configure_column("Download PDF", cellRenderer='html')  # Make the download column render HTML
-
-            # Render leaderboard with AgGrid
+            # Display leaderboard using Plotly Table
             st.subheader(f"Leaderboard for {selected_domain}")
-            AgGrid(leaderboard_df, gridOptions=gb.build(), enable_enterprise_modules=True)
+            fig = go.Figure(
+                data=[go.Table(
+                    header=dict(
+                        values=["File Name", "Score", "Rank", "Download PDF"],
+                        fill_color='rgba(255, 87, 51, 0.5)',
+                        align='center',
+                        font=dict(size=20),
+                        height=35
+                    ),
+                    cells=dict(
+                        values=[leaderboard_df["File Name"], 
+                                leaderboard_df["Score"], 
+                                leaderboard_df["Rank"], 
+                                leaderboard_df["Download PDF"]],
+                        fill_color='teal',
+                        align='center',
+                        font=dict(size=18),
+                        height=30,
+                        format=["", "", "", "html"]  # Ensure HTML rendering for links
+                    )
+                )]
+            )
+
+            # Update layout for better visualization
+            fig.update_layout(width=900, height=500)
+
+            # Render the table using Plotly
+            st.plotly_chart(fig, use_container_width=True)
 
             # Trigger snowflake effect
             st.snow()
