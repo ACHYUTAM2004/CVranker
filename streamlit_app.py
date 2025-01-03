@@ -5,7 +5,7 @@ import pandas as pd
 from io import BytesIO
 import json
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder
+import plotly.graph_objects as go
 
 # Connect to Supabase
 SUPABASE_URL = "https://vbgxuijebobixzrqgvys.supabase.co"
