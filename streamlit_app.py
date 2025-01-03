@@ -289,19 +289,19 @@ elif page == "Recruiter":
                         header=dict(
                             values=list(leaderboard_df.columns),
                             fill_color='rgba(255, 87, 51, 0.5)',
-                            align='left',
-                            font=dict(size=18)
+                            align='centre',
+                            font=dict(size=20)
                         ),
                         cells=dict(
                             values=[leaderboard_df[col] for col in leaderboard_df.columns],
-                            fill_color='lavender',
-                            align='left',
-                            font=dict(size=16)
+                            fill_color='teal',
+                            align='centre',
+                            font=dict(size=18)
                         )
                     )
                 ]
             )
-            fig.update_layout(width=1000, height=600)
+            fig.update_layout(width=1000, height=800)
             st.plotly_chart(fig)
 
             # Trigger snowflake effect
