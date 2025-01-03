@@ -290,13 +290,15 @@ elif page == "Recruiter":
                             values=list(leaderboard_df.columns),
                             fill_color='rgba(255, 87, 51, 0.5)',
                             align='center',
-                            font=dict(size=20)
+                            font=dict(size=20),
+                            height=40
                         ),
                         cells=dict(
                             values=[leaderboard_df[col] for col in leaderboard_df.columns],
                             fill_color='teal',
                             align='center',
-                            font=dict(size=18)
+                            font=dict(size=18),
+                            height=30
                         )
                     )
                 ]
