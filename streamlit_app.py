@@ -249,7 +249,6 @@ elif page == "Job Seeker":
         
         # Get the leaderboard for the selected domain
         leaderboard = structured_data[domain]
-        
         # Find the latest uploaded file in the domain
         latest_file = None
         for file in leaderboard:
@@ -282,7 +281,28 @@ elif page == "Recruiter":
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
             # Display the leaderboard
-            st.write(leaderboard_df)
+            st.subheader(f"Leaderboard for {domain}")
+            st.markdown(
+                """
+                <style>
+                    .dataframe-container {
+                        width: 90%;
+                        margin: auto;
+                    }
+                    table.dataframe {
+                        font-size: 16px;
+                        border: 2px solid #ddd;
+                    }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+            st.write('<div class="dataframe-container">', unsafe_allow_html=True)
+            st.write(pd.DataFrame(leaderboard_sorted))
+            st.write('</div>', unsafe_allow_html=True)
+    
+            # Trigger snowflake effect
+            st.snow()
 
             # Provide download links for resumes
             st.subheader("Download Resumes")
