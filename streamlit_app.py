@@ -263,6 +263,10 @@ elif page == "Job Seeker":
         else:
             st.error("Could not find the rank for the uploaded file.")
 
+# To persist the leaderboard and download links across reruns, we use session state
+if 'leaderboard_df' not in st.session_state:
+    st.session_state['leaderboard_df'] = None
+
 # Recruiter Section
 if page == "Recruiter":
     st.title("Resume Ranking System")
@@ -281,9 +285,13 @@ if page == "Recruiter":
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
-            # Add "Download PDF" column with the file URLs for links (This will not be shown in Plotly table)
+            # Store the leaderboard in session state
+            st.session_state['leaderboard_df'] = leaderboard_df
+
+            # Add "Download PDF" column with the file URLs for links
+            FOLDER_PATH = "pdf"  # Your folder path
             leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
-                lambda x: f'{SUPABASE_URL}/storage/v1/object/{BUCKET_NAME}/{FOLDER_PATH}/{BUCKET_NAME}/{selected_domain}/{x}'
+                lambda x: f'{SUPABASE_URL}/storage/v1/object/public/{FOLDER_PATH}/{selected_domain}/{x}'
             )
 
             # Display leaderboard using Plotly Table (without "Download PDF" column)
@@ -331,3 +339,45 @@ if page == "Recruiter":
 
         except Exception as e:
             st.error(f"Failed to load leaderboard: {e}")
+
+    # If leaderboard already loaded, don't reload it
+    elif st.session_state['leaderboard_df'] is not None:
+        leaderboard_df = st.session_state['leaderboard_df']
+        st.subheader(f"Leaderboard for {selected_domain}")
+        fig = go.Figure(
+            data=[go.Table(
+                header=dict(
+                    values=["File Name", "Score", "Rank"],
+                    fill_color='rgba(255, 87, 51, 0.5)',
+                    align='center',
+                    font=dict(size=20),
+                    height=35
+                ),
+                cells=dict(
+                    values=[leaderboard_df["File Name"], 
+                            leaderboard_df["Score"], 
+                            leaderboard_df["Rank"]],
+                    fill_color='teal',
+                    align='center',
+                    font=dict(size=18),
+                    height=30
+                )
+            )]
+        )
+
+        # Update layout for better visualization
+        fig.update_layout(width=900, height=500)
+
+        # Render the table using Plotly
+        st.plotly_chart(fig, use_container_width=True)
+
+        # Manually add clickable download links using st.download_button
+        st.subheader("Download Links:")
+        for _, row in leaderboard_df.iterrows():
+            pdf_url = f"{SUPABASE_URL}/storage/v1/object/public/pdf/public/{selected_domain}/{row['File Name']}"
+            st.download_button(
+                label=f"Download {row['File Name']}",
+                data=requests.get(pdf_url).content,
+                file_name=row['File Name'],
+                mime="application/pdf"
+            )
