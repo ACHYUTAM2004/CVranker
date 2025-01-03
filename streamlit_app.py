@@ -257,13 +257,14 @@ elif page == "Job Seeker":
                 break
         
         if latest_file:
-            st.subheader(f"Rank for the Latest Uploaded File: {uploaded_file.name}")
+            st.write(f"Rank for the Latest Uploaded File: {uploaded_file.name}")
             st.write(f"Rank: {latest_file['Rank']}")
         else:
             st.error("Could not find the rank for the uploaded file.")
 
 # Recruiter Section
 if page == "Recruiter":
+    st.title("Resume Ranking System")
     st.header("Recruiter")
     st.subheader("View Leaderboard")
     selected_domain = st.selectbox("Select Domain", ["data-scientist", "database-management", "web-designing"], key="recruiter_domain")
@@ -279,18 +280,18 @@ if page == "Recruiter":
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
-            # Add "Download PDF" column with HTML links
+            # Add "Download PDF" column with the file URLs for links (This will not be shown in Plotly table)
             FOLDER_PATH = "pdf"  # Your folder path
             leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
-                lambda x: f'<a href="{SUPABASE_URL}/storage/v1/object/public/{FOLDER_PATH}/{selected_domain}/{x}" target="_blank">Download</a>'
+                lambda x: f'{SUPABASE_URL}/storage/v1/object/public/{FOLDER_PATH}/{selected_domain}/{x}'
             )
 
-            # Display leaderboard using Plotly Table
+            # Display leaderboard using Plotly Table (without "Download PDF" column)
             st.subheader(f"Leaderboard for {selected_domain}")
             fig = go.Figure(
                 data=[go.Table(
                     header=dict(
-                        values=["File Name", "Score", "Rank", "Download PDF"],
+                        values=["File Name", "Score", "Rank"],
                         fill_color='rgba(255, 87, 51, 0.5)',
                         align='center',
                         font=dict(size=20),
@@ -299,13 +300,11 @@ if page == "Recruiter":
                     cells=dict(
                         values=[leaderboard_df["File Name"], 
                                 leaderboard_df["Score"], 
-                                leaderboard_df["Rank"], 
-                                leaderboard_df["Download PDF"]],
+                                leaderboard_df["Rank"]],
                         fill_color='teal',
                         align='center',
                         font=dict(size=18),
-                        height=30,
-                        format=["", "", "", "html"]  # Ensure HTML rendering for links
+                        height=30
                     )
                 )]
             )
@@ -316,9 +315,10 @@ if page == "Recruiter":
             # Render the table using Plotly
             st.plotly_chart(fig, use_container_width=True)
 
-            # Add clickable download links using st.markdown (this ensures proper rendering of the links)
-            for index, row in leaderboard_df.iterrows():
-                st.markdown(f"**{row['File Name']}**: [Download PDF](<a href='{row['Download PDF']}' target='_blank'>{row['File Name']}</a>)")
+            # Manually add clickable download links using st.markdown (below the table)
+            st.subheader("Download Links:")
+            for _, row in leaderboard_df.iterrows():
+                st.markdown(f"**{row['File Name']}**: [Download PDF]({row['Download PDF']})")
 
             # Trigger snowflake effect
             st.snow()
