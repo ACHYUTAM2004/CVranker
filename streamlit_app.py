@@ -206,7 +206,6 @@ if page == "Intro":
 
 elif page == "Job Seeker":
     # Job Seeker Section
-    st.title("Resume Ranking System")
     st.header("Job Seeker")
     st.subheader("Upload Your Resume")
     
@@ -265,7 +264,6 @@ elif page == "Job Seeker":
 
 elif page == "Recruiter":
     # Recruiter Section
-    st.title("Resume Ranking System")
     st.header("Recruiter")
     st.subheader("View Leaderboard")
     selected_domain = st.selectbox("Select Domain", ["data-scientist", "database-management", "web-designing"], key="recruiter_domain")
@@ -281,39 +279,44 @@ elif page == "Recruiter":
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
+            # Add "Download PDF" column
+            leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
+                lambda x: f'<a href="{SUPABASE_URL}/storage/v1/object/pdf/{FOLDER_PATH}/{selected_domain}/{x}" target="_blank">Download</a>'
+            )
+
             # Display leaderboard using Plotly for better control
             st.subheader(f"Leaderboard for {selected_domain}")
             fig = go.Figure(
                 data=[
                     go.Table(
                         header=dict(
-                            values=list(leaderboard_df.columns),
+                            values=["File Name", "Score", "Rank", "Download PDF"],
                             fill_color='rgba(255, 87, 51, 0.5)',
                             align='center',
                             font=dict(size=20),
                             height=35
                         ),
                         cells=dict(
-                            values=[leaderboard_df[col] for col in leaderboard_df.columns],
+                            values=[
+                                leaderboard_df["File Name"],
+                                leaderboard_df["Score"],
+                                leaderboard_df["Rank"],
+                                leaderboard_df["Download PDF"],
+                            ],
                             fill_color='teal',
                             align='center',
                             font=dict(size=18),
-                            height=30
+                            height=30,
+                            format=["", "", "", "html"],  # Ensure HTML rendering for links
                         )
                     )
                 ]
             )
-            fig.update_layout(width=800, height=500)
-            st.plotly_chart(fig)
+            fig.update_layout(width=900, height=500)
+            st.plotly_chart(fig, use_container_width=True)
 
             # Trigger snowflake effect
             st.snow()
 
-            # Provide download links for resumes
-            st.subheader("Download Resumes")
-            for _, row in leaderboard_df.iterrows():
-                resume_path = f"{FOLDER_PATH}/{selected_domain}/{row['File Name']}"
-                download_link = f"{SUPABASE_URL}/storage/v1/object/public/{resume_path}"
-                st.markdown(f"[Download {row['File Name']}]({download_link})")
         except Exception as e:
             st.error(f"Failed to load leaderboard: {e}")
