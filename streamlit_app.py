@@ -288,7 +288,7 @@ elif page == "Recruiter":
                     go.Table(
                         header=dict(
                             values=list(leaderboard_df.columns),
-                            fill_color='paleturquoise',
+                            fill_color='rgba(255, 87, 51, 0.5)',
                             align='left',
                             font=dict(size=18)
                         ),
