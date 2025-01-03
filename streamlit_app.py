@@ -208,10 +208,13 @@ elif page == "Job Seeker":
     st.title("Resume Ranking System")
     st.header("Job Seeker")
     st.subheader("Upload Your Resume")
+    
+    # Domain selection and file upload
     domain = st.selectbox("Select Your Domain", ["data-scientist", "database-management", "web-designing"])
     uploaded_file = st.file_uploader("Upload your PDF Resume", type="pdf")
-
-    if uploaded_file and st.button("Upload and Get Rank"):
+    
+    # Button to upload the resume
+    if uploaded_file and st.button("Upload Resume"):
         # Define the file path in Supabase
         file_path = f"{FOLDER_PATH}/{domain}/{uploaded_file.name}"
         
@@ -237,17 +240,28 @@ elif page == "Job Seeker":
                 
         except Exception as e:
             st.error(f"Failed to upload the resume: {e}")
-
-        # Process files and display leaderboard (sorted by rank)
+    
+    # Button to get the rank of the latest uploaded file
+    if uploaded_file and st.button("Get Rank"):
+        # Process files and display rank for the latest uploaded file only
         df = create_dataframe_from_subfolders(BUCKET_NAME, FOLDER_PATH)
         structured_data = preprocessing(df, BUCKET_NAME, FOLDER_PATH)
+        
+        # Get the leaderboard for the selected domain
         leaderboard = structured_data[domain]
         
-        # Sort leaderboard by rank
-        leaderboard_sorted = sorted(leaderboard, key=lambda x: x['Rank'])
+        # Find the latest uploaded file in the domain
+        latest_file = None
+        for file in leaderboard:
+            if file['File Name'] == uploaded_file.name:
+                latest_file = file
+                break
         
-        st.subheader(f"Leaderboard for {domain}")
-        st.write(pd.DataFrame(leaderboard_sorted))
+        if latest_file:
+            st.subheader(f"Rank for the Latest Uploaded File: {uploaded_file.name}")
+            st.write(f"Rank: {latest_file['Rank']}")
+        else:
+            st.error("Could not find the rank for the uploaded file.")
 
 elif page == "Recruiter":
     # Recruiter Section
