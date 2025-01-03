@@ -280,7 +280,7 @@ elif page == "Recruiter":
             leaderboard_data_sorted = sorted(leaderboard_data, key=lambda x: x['Rank'])
 
             # Display the leaderboard
-            st.subheader(f"Leaderboard for {domain}")
+            st.subheader(f"Leaderboard for {selected_domain}")
             st.markdown(
                 """
                 <style>
@@ -297,7 +297,7 @@ elif page == "Recruiter":
                 unsafe_allow_html=True
             )
             st.write('<div class="dataframe-container">', unsafe_allow_html=True)
-            st.write(pd.DataFrame(leaderboard_sorted))
+            st.write(pd.DataFrame(leaderboard_data_sorted))
             st.write('</div>', unsafe_allow_html=True)
     
             # Trigger snowflake effect
