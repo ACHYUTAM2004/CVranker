@@ -304,6 +304,7 @@ elif page == "Recruiter":
             st.snow()
 
             # Provide download links for resumes
+            leaderboard_df=df.DataFrame(leaderboard_data_sorted)
             st.subheader("Download Resumes")
             for _, row in leaderboard_df.iterrows():
                 resume_path = f"{FOLDER_PATH}/{selected_domain}/{row['File Name']}"
