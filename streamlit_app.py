@@ -287,7 +287,7 @@ elif page == "Recruiter":
                 lambda x: f'<a href="{SUPABASE_URL}/storage/v1/object/{FOLDER_PATH}/pdf/{selected_domain}/{x}" target="_blank">Download</a>'
             )
 
-            # Render leaderboard as an HTML table
+           # Render leaderboard as an HTML table
             st.subheader(f"Leaderboard for {selected_domain}")
             
             # Add custom styles for table color and size
@@ -326,7 +326,8 @@ elif page == "Recruiter":
             leaderboard_html = leaderboard_df.to_html(
                 escape=False, 
                 index=False, 
-                columns=["File Name", "Score", "Rank", "Download PDF"]
+                columns=["File Name", "Score", "Rank", "Download PDF"],
+                classes='leaderboard-table'  # Add the CSS class here
             )
             
             # Add the style to the table HTML
