@@ -203,13 +203,33 @@ domain = st.selectbox("Select Your Domain", ["data-scientist", "database-managem
 uploaded_file = st.file_uploader("Upload your PDF Resume", type="pdf")
 
 if uploaded_file and st.button("Upload and Get Rank"):
-    # Upload the resume to Supabase
+    # Define the file path in Supabase
     file_path = f"{FOLDER_PATH}/{domain}/{uploaded_file.name}"
+    
     try:
-        response = supabase.storage.from_(BUCKET_NAME).upload(file_path, uploaded_file.getvalue())
-        st.success("Resume uploaded successfully!")
+        # Check if the file already exists in Supabase
+        existing_files = supabase.storage.from_(BUCKET_NAME).list(f"{FOLDER_PATH}/{domain}")
+        
+        if any(file['name'] == uploaded_file.name for file in existing_files):
+            st.warning(f"The file '{uploaded_file.name}' already exists in the '{domain}' folder.")
+            overwrite = st.radio("Do you want to overwrite the existing file?", ("Yes", "No"))
+            
+            if overwrite == "No":
+                st.info("Upload cancelled. The file was not overwritten.")
+            else:
+                # Upload and overwrite the file
+                response = supabase.storage.from_(BUCKET_NAME).upload(
+                    file_path, uploaded_file.getvalue(), options={"upsert": True}
+                )
+                st.success("File overwritten successfully!")
+        else:
+            # Upload the file as it doesn't exist
+            response = supabase.storage.from_(BUCKET_NAME).upload(file_path, uploaded_file.getvalue())
+            st.success("Resume uploaded successfully!")
+            
     except Exception as e:
         st.error(f"Failed to upload the resume: {e}")
+
 
     # Process files and display leaderboard
     df = create_dataframe_from_subfolders(BUCKET_NAME, FOLDER_PATH)
