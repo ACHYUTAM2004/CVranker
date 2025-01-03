@@ -264,7 +264,6 @@ elif page == "Job Seeker":
 
 # Recruiter Section
 if page == "Recruiter":
-    st.title("Resume Ranking System")
     st.header("Recruiter")
     st.subheader("View Leaderboard")
     selected_domain = st.selectbox("Select Domain", ["data-scientist", "database-management", "web-designing"], key="recruiter_domain")
@@ -316,6 +315,10 @@ if page == "Recruiter":
 
             # Render the table using Plotly
             st.plotly_chart(fig, use_container_width=True)
+
+            # Add clickable download links using st.markdown (this ensures proper rendering of the links)
+            for index, row in leaderboard_df.iterrows():
+                st.markdown(f"**{row['File Name']}**: [Download PDF](<a href='{row['Download PDF']}' target='_blank'>{row['File Name']}</a>)")
 
             # Trigger snowflake effect
             st.snow()
