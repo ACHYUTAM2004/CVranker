@@ -194,71 +194,80 @@ def preprocessing(dataframe, bucket_name, main_folder="public"):
   # Optionally, return the structured data
 
 # Define Streamlit UI
-st.title("Resume Ranking System")
+# Sidebar navigation
+page = st.sidebar.selectbox("Select a Page", ["Intro", "Job Seeker", "Recruiter"])
 
-# Job Seeker Section
-st.header("Job Seeker")
-st.subheader("Upload Your Resume")
-domain = st.selectbox("Select Your Domain", ["data-scientist", "database-management", "web-designing"])
-uploaded_file = st.file_uploader("Upload your PDF Resume", type="pdf")
+# Page content based on selection
+if page == "Intro":
+    st.title("Resume Ranking System")
+    st.subheader("Welcome to the Resume Ranking System!")
+    st.write("This system helps job seekers upload their resumes and get ranked based on their skills. Recruiters can view the leaderboard and download the resumes.")
 
-if uploaded_file and st.button("Upload and Get Rank"):
-    # Define the file path in Supabase
-    file_path = f"{FOLDER_PATH}/{domain}/{uploaded_file.name}"
-    
-    try:
-        # Check if the file already exists in Supabase
-        existing_files = supabase.storage.from_(BUCKET_NAME).list(f"{FOLDER_PATH}/{domain}")
+elif page == "Job Seeker":
+    # Job Seeker Section
+    st.title("Resume Ranking System")
+    st.header("Job Seeker")
+    st.subheader("Upload Your Resume")
+    domain = st.selectbox("Select Your Domain", ["data-scientist", "database-management", "web-designing"])
+    uploaded_file = st.file_uploader("Upload your PDF Resume", type="pdf")
+
+    if uploaded_file and st.button("Upload and Get Rank"):
+        # Define the file path in Supabase
+        file_path = f"{FOLDER_PATH}/{domain}/{uploaded_file.name}"
         
-        if any(file['name'] == uploaded_file.name for file in existing_files):
-            st.warning(f"The file '{uploaded_file.name}' already exists in the '{domain}' folder.")
-            overwrite = st.radio("Do you want to overwrite the existing file?", ("Yes", "No"))
+        try:
+            # Check if the file already exists in Supabase
+            existing_files = supabase.storage.from_(BUCKET_NAME).list(f"{FOLDER_PATH}/{domain}")
             
-            if overwrite == "No":
-                st.info("Upload cancelled. The file was not overwritten.")
+            if any(file['name'] == uploaded_file.name for file in existing_files):
+                st.warning(f"The file '{uploaded_file.name}' already exists in the '{domain}' folder.")
+                overwrite = st.radio("Do you want to overwrite the existing file?", ("Yes", "No"))
+                
+                if overwrite == "No":
+                    st.info("Upload cancelled. The file was not overwritten.")
+                else:
+                    # Delete the existing file before re-uploading
+                    supabase.storage.from_(BUCKET_NAME).remove([file_path])
+                    response = supabase.storage.from_(BUCKET_NAME).upload(file_path, uploaded_file.getvalue())
+                    st.success("File overwritten successfully!")
             else:
-                # Delete the existing file before re-uploading
-                supabase.storage.from_(BUCKET_NAME).remove([file_path])
+                # Upload the file as it doesn't exist
                 response = supabase.storage.from_(BUCKET_NAME).upload(file_path, uploaded_file.getvalue())
-                st.success("File overwritten successfully!")
-        else:
-            # Upload the file as it doesn't exist
-            response = supabase.storage.from_(BUCKET_NAME).upload(file_path, uploaded_file.getvalue())
-            st.success("Resume uploaded successfully!")
-            
-    except Exception as e:
-        st.error(f"Failed to upload the resume: {e}")
+                st.success("Resume uploaded successfully!")
+                
+        except Exception as e:
+            st.error(f"Failed to upload the resume: {e}")
 
+        # Process files and display leaderboard
+        df = create_dataframe_from_subfolders(BUCKET_NAME, FOLDER_PATH)
+        structured_data = preprocessing(df, BUCKET_NAME, FOLDER_PATH)
+        leaderboard = structured_data[domain]
+        st.subheader(f"Leaderboard for {domain}")
+        st.write(pd.DataFrame(leaderboard))
 
+elif page == "Recruiter":
+    # Recruiter Section
+    st.title("Resume Ranking System")
+    st.header("Recruiter")
+    st.subheader("View Leaderboard")
+    selected_domain = st.selectbox("Select Domain", ["data-scientist", "database-management", "web-designing"], key="recruiter_domain")
 
-    # Process files and display leaderboard
-    df = create_dataframe_from_subfolders(BUCKET_NAME, FOLDER_PATH)
-    structured_data = preprocessing(df, BUCKET_NAME, FOLDER_PATH)
-    leaderboard = structured_data[domain]
-    st.subheader(f"Leaderboard for {domain}")
-    st.write(pd.DataFrame(leaderboard))
+    if st.button("Show Leaderboard"):
+        json_file_path = f"{JSON_FOLDER}/{selected_domain}_structured_data.json"
+        try:
+            # Download the leaderboard JSON from Supabase
+            response = supabase.storage.from_(BUCKET_NAME).download(json_file_path)
+            leaderboard_data = json.load(BytesIO(response))
+            leaderboard_df = pd.DataFrame(leaderboard_data)
 
-# Recruiter Section
-st.header("Recruiter")
-st.subheader("View Leaderboard")
-selected_domain = st.selectbox("Select Domain", ["data-scientist", "database-management", "web-designing"], key="recruiter_domain")
+            # Display the leaderboard
+            st.write(leaderboard_df)
 
-if st.button("Show Leaderboard"):
-    json_file_path = f"{JSON_FOLDER}/{selected_domain}_structured_data.json"
-    try:
-        # Download the leaderboard JSON from Supabase
-        response = supabase.storage.from_(BUCKET_NAME).download(json_file_path)
-        leaderboard_data = json.load(BytesIO(response))
-        leaderboard_df = pd.DataFrame(leaderboard_data)
-
-        # Display the leaderboard
-        st.write(leaderboard_df)
-
-        # Provide download links for resumes
-        st.subheader("Download Resumes")
-        for _, row in leaderboard_df.iterrows():
-            resume_path = f"{FOLDER_PATH}/{selected_domain}/{row['File Name']}"
-            download_link = f"{SUPABASE_URL}/storage/v1/object/public/{resume_path}"
-            st.markdown(f"[Download {row['File Name']}]({download_link})")
-    except Exception as e:
-        st.error(f"Failed to load leaderboard: {e}")
+            # Provide download links for resumes
+            st.subheader("Download Resumes")
+            for _, row in leaderboard_df.iterrows():
+                resume_path = f"{FOLDER_PATH}/{selected_domain}/{row['File Name']}"
+                download_link = f"{SUPABASE_URL}/storage/v1/object/public/{resume_path}"
+                st.markdown(f"[Download {row['File Name']}]({download_link})")
+        except Exception as e:
+            st.error(f"Failed to load leaderboard: {e}")
