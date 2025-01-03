@@ -217,10 +217,9 @@ if uploaded_file and st.button("Upload and Get Rank"):
             if overwrite == "No":
                 st.info("Upload cancelled. The file was not overwritten.")
             else:
-                # Upload and overwrite the file
-                response = supabase.storage.from_(BUCKET_NAME).upload(
-                    file_path, uploaded_file.getvalue(), options={"upsert": True}
-                )
+                # Delete the existing file before re-uploading
+                supabase.storage.from_(BUCKET_NAME).remove([file_path])
+                response = supabase.storage.from_(BUCKET_NAME).upload(file_path, uploaded_file.getvalue())
                 st.success("File overwritten successfully!")
         else:
             # Upload the file as it doesn't exist
@@ -229,6 +228,7 @@ if uploaded_file and st.button("Upload and Get Rank"):
             
     except Exception as e:
         st.error(f"Failed to upload the resume: {e}")
+
 
 
     # Process files and display leaderboard
