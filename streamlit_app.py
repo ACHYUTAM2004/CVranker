@@ -5,7 +5,7 @@ import pandas as pd
 from io import BytesIO
 import json
 import streamlit as st
-import plotly.graph_objects as go
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Connect to Supabase
 SUPABASE_URL = "https://vbgxuijebobixzrqgvys.supabase.co"
@@ -262,8 +262,7 @@ elif page == "Job Seeker":
         else:
             st.error("Could not find the rank for the uploaded file.")
 
-elif page == "Recruiter":
-    # Recruiter Section
+if page == "Recruiter":
     st.title("Resume Ranking System")
     st.header("Recruiter")
     st.subheader("View Leaderboard")
@@ -281,60 +280,20 @@ elif page == "Recruiter":
             leaderboard_df = pd.DataFrame(leaderboard_data_sorted)
 
             # Add download links to the leaderboard
-            SUPABASE_URL = "https://your-supabase-url.com"  # Update with your actual Supabase URL
             FOLDER_PATH = "pdf"  # Your folder path
             leaderboard_df["Download PDF"] = leaderboard_df["File Name"].apply(
                 lambda x: f'<a href="{SUPABASE_URL}/storage/v1/object/{FOLDER_PATH}/pdf/{selected_domain}/{x}" target="_blank">Download</a>'
             )
 
-           # Render leaderboard as an HTML table
+            # Configure AgGrid options
+            gb = GridOptionsBuilder.from_dataframe(leaderboard_df)
+            gb.configure_pagination(paginationAutoPageSize=True)  # Enable pagination
+            gb.configure_default_column(editable=False)  # Columns not editable
+            gb.configure_column("Download PDF", cellRenderer='html')  # Make the download column render HTML
+
+            # Render leaderboard with AgGrid
             st.subheader(f"Leaderboard for {selected_domain}")
-            
-            # Add custom styles for table color and size
-            table_style = """
-                <style>
-                    .leaderboard-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        font-size: 16px;
-                    }
-                    .leaderboard-table th, .leaderboard-table td {
-                        padding: 8px;
-                        text-align: left;
-                        border: 1px solid #ddd;
-                    }
-                    .leaderboard-table th {
-                        background-color: #f2f2f2;
-                        color: #333;
-                    }
-                    .leaderboard-table tr:nth-child(even) {
-                        background-color: #f9f9f9;
-                    }
-                    .leaderboard-table tr:hover {
-                        background-color: #f1f1f1;
-                    }
-                    .leaderboard-table .high-score {
-                        background-color: #90EE90;
-                    }
-                    .leaderboard-table .low-score {
-                        background-color: #FFCCCB;
-                    }
-                </style>
-            """
-            
-            # Apply style and render table
-            leaderboard_html = leaderboard_df.to_html(
-                escape=False, 
-                index=False, 
-                columns=["File Name", "Score", "Rank", "Download PDF"],
-                classes='leaderboard-table'  # Add the CSS class here
-            )
-            
-            # Add the style to the table HTML
-            styled_table = table_style + leaderboard_html
-            
-            # Render the table with the styles
-            st.markdown(styled_table, unsafe_allow_html=True)
+            AgGrid(leaderboard_df, gridOptions=gb.build(), enable_enterprise_modules=True)
 
             # Trigger snowflake effect
             st.snow()
