@@ -26,4 +26,7 @@
   Significantly reduces the time and effort required in the initial screening of candidates, helping organizations focus on top talent quickly and efficiently.  
 
 - **Live Demo:**  
-  The project is live on **Vercel** and ready for recruiters to test and use.  
+  The project is live on **Streamlt** and ready for recruiters to test and use.
+
+  ![image](https://github.com/user-attachments/assets/b56ddbf2-d1f4-451a-8c19-3dd860e28ad7)
+
